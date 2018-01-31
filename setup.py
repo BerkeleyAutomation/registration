@@ -1,11 +1,16 @@
 """
-Setup of core python codebase
-Author: Jeff Mahler
+Setup of registration codebase.
+Author: Matt Matl
 """
 from setuptools import setup
 
 requirements = [
     'numpy',
+    'trimesh',
+    'plyfile',
+    'autolab_core',
+    'visualization',
+    'autolab_perception'
 ]
 
 exec(open('registration/version.py').read())
