@@ -75,16 +75,16 @@ def compute_salient_edges(mesh, num_views=300):
 
     Returns
     -------
-    a mask for ___ which identifies the important edges
+    a mask for mesh.vertices[mesh.face_adjacency_edges] which identifies the important edges
     """
 
-    x.apply_translation(-x.center_mass)
+    mesh.apply_translation(-mesh.center_mass)
 
-    edges = x.face_adjacency
-    verts = x.vertices[x.face_adjacency_edges]
+    edges = mesh.face_adjacency
+    verts = mesh.vertices[mesh.face_adjacency_edges]
     midpoints = (verts[:,0] + verts[:,1]) / 2.0
-    n1 = x.face_normals[edges][:,0]
-    n2 = x.face_normals[edges][:,1]
+    n1 = mesh.face_normals[edges][:,0]
+    n2 = mesh.face_normals[edges][:,1]
 
     views = sample_on_sphere(num_points=num_views)
 
@@ -97,7 +97,7 @@ def compute_salient_edges(mesh, num_views=300):
         d2 = np.einsum('ij,ij->i', n2, view-verts[:,1])
         m = d1*d2 < 0
         
-        intersect_array = x.ray.intersects_any(midpoints + 1e-5*directions, directions)
+        intersect_array = mesh.ray.intersects_any(midpoints + 1e-5*directions, directions)
         visible_counter[np.logical_not(intersect_array)] += 1.0
         salience_counter[np.logical_and(m, np.logical_not(intersect_array))] += 1.0
     
@@ -122,14 +122,14 @@ def visualize_salient_edges(mesh, edge_mask):
     mesh : trimesh.Trimesh
         the base mesh
     edge_mask : ndarray(num_edges,)
-        a mask for ___ that identifies the important edges
+        a mask for mesh.vertices[mesh.face_adjacency_edges] that identifies the important edges
     """
 
     # maximum_count = np.amax(edge_scores)
     # minimum_count = np.amin(edge_scores)
-    verts = x.vertices[x.face_adjacency_edges]
+    verts = mesh.vertices[mesh.face_adjacency_edges]
     vis.figure()
-    vis.mesh(x)
+    vis.mesh(mesh)
     for i in range(len(verts)):
         if edge_mask[i]:
             # rgb_color = rgb(minimum_count, maximum_count, edge_scores[i])
