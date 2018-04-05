@@ -68,32 +68,35 @@ def run_test_cases(mesh, pcs_cfg, pcg_cfg, n_test_cases=1, vis=False):
     aligner = Super4PCSAligner(pcs_cfg)
 
     # Render test cases
-    pcs, dis, poses, cis = pcg.generate_worksurface_point_clouds(mesh, edge_mask, n_test_cases)
-
-    return
+    pcs, dis, poses, cis, true_edge_masks = pcg.generate_worksurface_point_clouds(mesh, edge_mask, n_test_cases)
 
     # For each test case
     for i in range(n_test_cases):
-        pc_cam, depth_im, T_obj_camera, ci = pcs[i], dis[i], poses[i], cis[i]
+        pc_cam, depth_im, T_obj_camera, ci, true_edge_mask = pcs[i], dis[i], poses[i], cis[i], true_edge_masks[i]
 
         # TODO
         # Sample points from the salient edges of the transformed mesh with some sigma
         # Discard "invisible" points (i.e. edges below the surface of the object)
 
         # Try canny edge detector
-        img_data = np.array(depth_im.data * 256, dtype=np.uint8)
-        image_edges = cv2.Canny(img_data, 2, 30)
+        #img_data = np.array(depth_im.data * 256, dtype=np.uint8)
+        #image_edges = cv2.Canny(img_data, 2, 30)
 
+        #if vis:
+        #    vis2d.figure()
+        #    vis2d.subplot(121)
+        #    vis2d.imshow(depth_im)
+        #    vis2d.subplot(122)
+        #    plt.imshow(image_edges, cmap='gray')
+        #    vis2d.show()
+
+        #mask = BinaryImage(image_edges)
+        mask = true_edge_mask
+        depth_im_edges = depth_im.mask_binary(mask)
         if vis:
             vis2d.figure()
-            vis2d.subplot(121)
-            vis2d.imshow(depth_im)
-            vis2d.subplot(122)
-            plt.imshow(image_edges, cmap='gray')
+            vis2d.imshow(depth_im_edges)
             vis2d.show()
-
-        mask = BinaryImage(image_edges)
-        depth_im_edges = depth_im.mask_binary(mask)
         edge_pc_cam = ci.deproject(depth_im_edges)
         edge_pc_cam.remove_zero_points()
         print edge_pc_cam.data.shape
@@ -115,8 +118,8 @@ def run_test_cases(mesh, pcs_cfg, pcg_cfg, n_test_cases=1, vis=False):
 
         vis3d.figure()
         vis3d.points(T_obj_camera_est.as_frames('mesh','camera') * edge_pc_obj, color=(0,0,1), scale=0.001)
-        vis3d.points(edge_pc_cam, scale=0.001)
-        vis3d.mesh(true_mesh, style='surface')
+        vis3d.points(edge_pc_cam, color=(0,1,0), scale=0.001)
+        vis3d.mesh(true_mesh, color=(0,1,0), style='surface')
         vis3d.mesh(est_mesh, style='surface', color=(0,0,1))
         vis3d.show()
 
@@ -124,9 +127,9 @@ def run_test_cases(mesh, pcs_cfg, pcg_cfg, n_test_cases=1, vis=False):
 
 def main():
     pcs_cfg = {
-        'overlap' : 0.65,
-        'accuracy': 0.0005,
-        'samples' : 2000,
+        'overlap' : 0.9,
+        'accuracy': 0.001,
+        'samples' : 600,
         'timeout' : 3000,
         'cache_dir' : './.cache'
     }
@@ -190,7 +193,7 @@ def main():
     }
 
     # Load a trimesh and sample points from it
-    # m = trimesh.load_mesh('data/bar_clamp.obj')
+    #m = trimesh.load_mesh('data/bar_clamp.obj')
     m = trimesh.load_mesh('data/demon_helmet.obj')
     #m = trimesh.load_mesh('data/73061.obj') # bad
     #m = trimesh.load_mesh('data/grip.obj')
@@ -200,8 +203,8 @@ def main():
     #m = trimesh.load_mesh('data/294517.obj') # tough
 
     run_test_cases(m, pcs_cfg, pcg_cfg, 3)
-
     return
+
     #m = trimesh.load_mesh('data/73061.obj')
     #points, triinds = trimesh.sample.sample_surface_even(m, 100000)
     points = sample_from_edges(m)

@@ -45,7 +45,7 @@ class PointCloudGenerator(object):
         probs = probs / sum(probs)
 
         # Generate n datapoints
-        point_clouds, depth_images, obj_to_cam_poses, cis = [], [], [], []
+        point_clouds, depth_images, obj_to_cam_poses, cis, di_masks = [], [], [], [], []
         for i in range(n_samples):
             # Sample a pose tf
             tf_id = np.random.choice(np.arange(len(probs)), p=probs)
@@ -79,12 +79,13 @@ class PointCloudGenerator(object):
             # Create a binary image rendering of the salient edges of the mesh
             di_mask = self._compute_edge_mask(mesh, edge_mask, ci, T_obj_camera, depth_image)
             di_mask = BinaryImage(di_mask * 255)
-            vis2d.figure()
-            vis2d.subplot(121)
-            vis2d.imshow(di_mask)
-            vis2d.subplot(122)
-            vis2d.imshow(depth_image)
-            vis2d.show()
+            di_masks.append(di_mask)
+            #vis2d.figure()
+            #vis2d.subplot(121)
+            #vis2d.imshow(di_mask)
+            #vis2d.subplot(122)
+            #vis2d.imshow(depth_image)
+            #vis2d.show()
 
             if vis:
                 vis2d.figure()
@@ -97,7 +98,7 @@ class PointCloudGenerator(object):
                 vis3d.pose(cs.T_camera_world)
                 vis3d.show()
 
-        return point_clouds, depth_images, obj_to_cam_poses, cis
+        return point_clouds, depth_images, obj_to_cam_poses, cis, di_masks
 
     def _compute_edge_mask(self, mesh, edge_mask, ci, T_obj_camera, depth_im):
 
@@ -157,6 +158,7 @@ class PointCloudGenerator(object):
 
                 while y <= y_end:
                     if y < 0 or y >= di_mask.shape[0]:
+                        y += 1
                         continue
 
                     exp_x = slope * y + intercept
@@ -188,6 +190,7 @@ class PointCloudGenerator(object):
 
                 while x <= x_end:
                     if x < 0 or x >= di_mask.shape[1]:
+                        x += 1
                         continue
 
                     exp_y = slope * x + intercept
