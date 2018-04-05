@@ -54,7 +54,7 @@ vsp_cfg = {
     },
 }
 
-x = trimesh.load_mesh('./data/demon_helmet.obj')
+# x = trimesh.load_mesh('./data/demon_helmet.obj')
 # x = trimesh.load_mesh('./data/bar_clamp.off', process=False)
 # x = trimesh.load_mesh('./data/73061.obj')
 # x = trimesh.load_mesh('./data/2126220.obj')
@@ -78,7 +78,6 @@ def compute_salient_edges(mesh, num_views=300):
     a mask for mesh.vertices[mesh.face_adjacency_edges] which identifies the important edges
     """
 
-    mesh.apply_translation(-mesh.center_mass)
 
     edges = mesh.face_adjacency
     verts = mesh.vertices[mesh.face_adjacency_edges]
