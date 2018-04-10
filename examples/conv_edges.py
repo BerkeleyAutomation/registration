@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from os import listdir
 import os
 from keras.utils import plot_model
-from perception import GrayscaleImage, BinaryImage
+from perception import GrayscaleImage, BinaryImage, DepthImage
 from visualization import Visualizer2D as vis2d
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
@@ -36,16 +36,42 @@ def generate_training_data(filepath):
         edges = cv2.Canny(img, 170, 220)#lower_threshold, upper_threshold)
         x[i,:,:,:] = img / 256.0
         y[i,:,:] = edges > 126
-
+    
     y = y[:,:,:,np.newaxis]
     return x, y
         
 
-train_data, train_labels = generate_training_data('./data/rgb_images/')
+def depth_image_train_data(depth_image_path, edge_mask_path,  n, dim=256):
+    x = np.zeros((n, dim, dim))
+    y = np.zeros((n, dim, dim))
+
+    for i in range(n):
+        di = np.load(depth_image_path + str(i) + '.npy')
+        edge_mask = np.load(edge_mask_path + str(i) + '.npy')
+
+        x[i, :, :] = di
+        y[i, :, :] = edge_mask
+        
+    # rescale depth image to be between 0 and 1
+    max_depth = np.max(x[x > 0])  
+    
+    x[x== 0] += max_depth + 0.1 
+    min_depth = np.min(x[x > 0])
+    max_depth = np.max(x[x > 0])
+    x = (x - min_depth) / (max_depth - min_depth)
+    print(min_depth, max_depth)
+
+    x = x[:,:,:,np.newaxis]
+    y = y[:,:,:,np.newaxis] / 255.0
+    return x, y
+
+# train_data, train_labels = generate_training_data('./data/rgb_images/')
+train_data, train_labels = depth_image_train_data('./data/depth_images/', './data/edge_masks/', n=200)
 
 window_size = (7,7)
-input_size = (256,256,3)
-num_epochs = 5000
+# input_size = (256,256,3)
+input_size = (256, 256, 1)
+num_epochs = 100
 
 model = Sequential()
 
@@ -61,12 +87,14 @@ model.compile(loss=binary_crossentropy,
 
 model.fit(train_data, train_labels, verbose=1, epochs=num_epochs)
 
-test_data, test_labels = generate_training_data('./data/test/')
+# test_data, test_labels = generate_training_data('./data/test/')
+
+test_data, test_labels = train_data, train_labels
 predicted_edge_mask = model.predict(test_data)
 
-predicted_edge_mask = np.array(predicted_edge_mask[0] * 255, dtype=np.uint8)
+predicted_edge_mask = np.array(predicted_edge_mask[2] * 255, dtype=np.uint8)
 gi = BinaryImage(predicted_edge_mask)
-actual_edge_mask = np.array(test_labels[0] * 255, dtype=np.uint8)
+actual_edge_mask = np.array(test_labels[2] * 255, dtype=np.uint8)
 bi = BinaryImage(actual_edge_mask)
 vis2d.figure()
 vis2d.subplot(121)
