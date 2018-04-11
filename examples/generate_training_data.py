@@ -6,6 +6,23 @@ import pathlib2
 from visible_edges import compute_salient_edges
 from registration import PointCloudGenerator
 
+def point_normal_cloud(depth_image, camera_intr):
+    """Computes a point normal cloud of the depth image
+
+    Parameters
+    ----------
+    camera_intr : CameraIntrinsics object
+        The camera parameters from which this was taken
+
+    Returns
+    -------
+    autolab_core.PointNormalCloud
+        A point normal cloud from the depth image
+    """
+    point_cloud_im = camera_intr.deproject_to_image(depth_image)
+    return point_cloud_im.normal_cloud_im()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", type=str, help="the input folder of mesh files")
@@ -73,9 +90,13 @@ if __name__ == "__main__":
         edge_mask = compute_salient_edges(m, 300)
         print "starting render"
 
-        _, dis, _, _, true_edge_masks = pcg.generate_worksurface_point_clouds(m, edge_mask, num_views)
+        _, dis, _, cis, true_edge_masks = pcg.generate_worksurface_point_clouds(m, edge_mask, num_views)
         for i in range(num_views):
-            di, true_edge_mask = dis[i], true_edge_masks[i]
+            print('view:', i)
+            di, ci, true_edge_mask = dis[i], cis[i], true_edge_masks[i]
+            normals = point_normal_cloud(di, ci)
+            import pdb
+            pdb.set_trace()
             
             np.save(os.path.join(output_depth_folder, str(filename_counter)), di.data)
             np.save(os.path.join(output_mask_folder, str(filename_counter)), true_edge_mask.data)

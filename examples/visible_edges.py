@@ -54,8 +54,8 @@ vsp_cfg = {
     },
 }
 
-x = trimesh.load_mesh('./data/demon_helmet.obj')
-# x = trimesh.load_mesh('./data/bar_clamp.off', process=False)
+# x = trimesh.load_mesh('./data/demon_helmet.obj')
+x = trimesh.load_mesh('./data/bar_clamp.off', process=False)
 # x = trimesh.load_mesh('./data/73061.obj')
 # x = trimesh.load_mesh('./data/2126220.obj')
 # x = trimesh.load_mesh('./data/2677384.obj')
@@ -63,7 +63,7 @@ x = trimesh.load_mesh('./data/demon_helmet.obj')
 # x = trimesh.load_mesh('./data/4470711.obj')
 # x = trimesh.load_mesh('./data/90005.obj')
 
-def compute_salient_edges(mesh, num_views=100):
+def compute_salient_edges(mesh, num_views=300):
     """Uses different views to find the salient images from a mes
 
     Parameters
@@ -95,10 +95,10 @@ def compute_salient_edges(mesh, num_views=100):
         d1 = np.einsum('ij,ij->i', n1, view-verts[:,0])
         d2 = np.einsum('ij,ij->i', n2, view-verts[:,1])
         m = d1*d2 < 0
-         
+            
         intersect_array = mesh.ray.intersects_any(midpoints + 1e-5*directions, directions)
         visible_counter[np.logical_not(intersect_array)] += 1.0
-        # salience_counter[np.logical_and(m, np.logical_not(intersect_array))] += 1.0
+        salience_counter[np.logical_and(m, np.logical_not(intersect_array))] += 1.0
         
         m = np.logical_and(m, np.logical_not(intersect_array))
         salience_counter[m] += 1.0
@@ -107,11 +107,12 @@ def compute_salient_edges(mesh, num_views=100):
     visible_cutoff = np.percentile(visible_counter, 30)
     visible_counter[visible_counter < visible_cutoff] = 0
     edge_scores = np.divide(salience_counter, visible_counter, out=np.zeros_like(salience_counter), where=visible_counter!=0)
+    edge_scores[edge_scores > 1.0] = 1.0
     # min_salience = np.min(salience_counter)
     # max_salience = np.max(salience_counter)
     # edge_scores = (salience_counter - min_salience) / (max_salience - min_salience)
 
-    return edge_scores >= 0.4
+    return edge_scores >= 0.5
 
 
 def visualize_salient_edges(mesh, edge_mask):

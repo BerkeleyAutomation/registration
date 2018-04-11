@@ -26,6 +26,8 @@ class PointCloudGenerator(object):
         ----------
         mesh : trimesh.Trimesh
             The mesh to generate data for.
+        edge_mask : numpy.ndarray
+            the edge mask generated from compute_salient_edges 
         n_samples : int
             The number of samples to generate.
         vis : bool
@@ -39,6 +41,10 @@ class PointCloudGenerator(object):
             The corresponding depth images.
         obj_to_cam_poses : list of autolab_core.RigidTransform
             The object-to-camera transforms.
+        cis : list of perception.CameraIntrinsics
+            the intrinsic parameters for the camera in each view. 
+        di_masks : list of perception.BinaryImage
+            each element is a binary mask that identifies edges in the depth image
         """
         # Compute stable poses of mesh
         stp_pose_tfs, probs = mesh.compute_stable_poses()
@@ -47,6 +53,7 @@ class PointCloudGenerator(object):
         # Generate n datapoints
         point_clouds, depth_images, obj_to_cam_poses, cis, di_masks = [], [], [], [], []
         for i in range(n_samples):
+            
             # Sample a pose tf
             tf_id = np.random.choice(np.arange(len(probs)), p=probs)
             tf = stp_pose_tfs[tf_id]
@@ -257,3 +264,5 @@ class PointCloudGenerator(object):
 
         return di_mask
 
+
+        
