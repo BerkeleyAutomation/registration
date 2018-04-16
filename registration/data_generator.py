@@ -18,7 +18,6 @@ class PointCloudGenerator(object):
             A config file for the renderer's random variable.
         """
         self._ws_cfg = ws_config
-
     def generate_worksurface_point_clouds(self, mesh, edge_mask, n_samples, vis=False):
         """Generate point clouds of a mesh in isolation on a table.
 
@@ -106,7 +105,6 @@ class PointCloudGenerator(object):
                 vis3d.show()
 
         return point_clouds, depth_images, obj_to_cam_poses, cis, di_masks
-
     def _compute_edge_mask(self, mesh, edge_mask, ci, T_obj_camera, depth_im):
 
         # Allocate array for storing mask

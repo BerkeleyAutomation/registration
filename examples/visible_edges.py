@@ -63,6 +63,7 @@ x = trimesh.load_mesh('./data/bar_clamp.off', process=False)
 # x = trimesh.load_mesh('./data/4470711.obj')
 # x = trimesh.load_mesh('./data/90005.obj')
 
+
 def compute_salient_edges(mesh, num_views=300):
     """Uses different views to find the salient images from a mes
 
@@ -82,6 +83,7 @@ def compute_salient_edges(mesh, num_views=300):
     edges = mesh.face_adjacency
     verts = mesh.vertices[mesh.face_adjacency_edges]
     midpoints = (verts[:,0] + verts[:,1]) / 2.0
+    midpoints = midpoints.astype(np.float32)   
     n1 = mesh.face_normals[edges][:,0]
     n2 = mesh.face_normals[edges][:,1]
 
@@ -92,11 +94,15 @@ def compute_salient_edges(mesh, num_views=300):
 
     for view in views: 
         directions = view - midpoints
+
+        directions = directions.astype(np.float32)
         d1 = np.einsum('ij,ij->i', n1, view-verts[:,0])
         d2 = np.einsum('ij,ij->i', n2, view-verts[:,1])
         m = d1*d2 < 0
-            
-        intersect_array = mesh.ray.intersects_any(midpoints + 1e-5*directions, directions)
+        
+        a = midpoints + 1e-5*directions
+        a = a.astype(np.float32)
+        intersect_array = mesh.ray.intersects_any(a, directions)
         visible_counter[np.logical_not(intersect_array)] += 1.0
         salience_counter[np.logical_and(m, np.logical_not(intersect_array))] += 1.0
         

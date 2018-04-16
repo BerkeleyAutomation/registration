@@ -81,19 +81,39 @@ def depth_image_normals_train_data(x_path, y_path, n, dim=256):
     y = y[:, :, :, np.newaxis] / 255.0
     return x,y
 
+# get training data and test data
+
 # train_data, train_labels = generate_training_data('./data/rgb_images/')
 #data, labels = depth_image_train_data('./data/depth_images/', './data/edge_masks/', n=2000)
-data, labels = depth_image_normals_train_data('./data/depth_normal/', './data/edge_normal/', n=2000)
-percent_train = 0.1
-split_idx = int(percent_train * data.shape[0])
-train_data, train_labels = data[:split_idx, :, :, :], labels[:split_idx, :, :, :]
-test_data, test_labels = data[split_idx:, : ,: , :], labels[split_idx:, :, :, :]
+#data, labels = depth_image_normals_train_data('./data/barclamp_depth_normal/', './data/barclamp_edge_normal/', n=1000)
+#percent_train = 0.9
+#split_idx = int(percent_train * data.shape[0])
+#train_data, train_labels = data[:split_idx, :, :, :], labels[:split_idx, :, :, :]
+#test_data, test_labels = data[split_idx:, : ,: , :], labels[split_idx:, :, :, :]
+#test_data, test_labels = depth_image_normals_train_data('./data/demon_depth_normal/', './data/demon_edge_normal/', n=1000)
 
+## have training data from two folders:
+b_data, b_labels = depth_image_normals_train_data('./data/barclamp_depth_normal/', './data/barclamp_edge_normal/', n=1000)
+d_data, d_labels = depth_image_normals_train_data('./data/demon_depth_normal/', './data/demon_edge_normal/', n=1000)
+
+percent_train = 0.5
+split_idx = int(percent_train * b_data.shape[0])
+
+b_train, b_train_labels = b_data[:split_idx, :, :, :], b_labels[:split_idx, :, :, :]
+b_test, b_test_labels = b_data[split_idx:, :, :, :], b_labels[split_idx:, :, :, :]
+
+d_train, d_train_labels = d_data[:split_idx, :, :, :], d_labels[:split_idx, :, :, :]
+d_test, d_test_labels = d_data[split_idx:, :, :, :], d_labels[split_idx:, :, :, :]
+
+train_data, train_labels = np.concatenate((b_train, d_train)), np.concatenate((b_train_labels, d_train_labels))
+test_data, test_labels = np.concatenate((b_test, d_test)), np.concatenate((b_test_labels, d_test_labels))
+
+# set options for conv net
 window_size = (7,7)
 input_size = (256,256, 4)
 # input_size = (256, 256, 3)
 # input_size = (256, 256, 1)
-num_epochs = 100
+num_epochs = 50
 
 model = Sequential()
 
@@ -124,6 +144,10 @@ vis2d.imshow(gi)
 vis2d.subplot(122)
 vis2d.imshow(bi)
 vis2d.show()
+
+
+
+
 
 
 

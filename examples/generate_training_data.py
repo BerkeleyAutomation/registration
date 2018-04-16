@@ -22,8 +22,7 @@ def point_normal_cloud(depth_image, camera_intr):
     point_cloud_im = camera_intr.deproject_to_image(depth_image)
     return point_cloud_im.normal_cloud_im()
 
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", type=str, help="the input folder of mesh files")
     parser.add_argument("-od", "--output_depth", type=str, help="the output folder for depth images")
@@ -87,12 +86,14 @@ if __name__ == "__main__":
         print mesh_filepath
         full_path = os.path.join(input_folder, mesh_filepath)
         m = trimesh.load_mesh(full_path)
+        if len(m.faces) > 100000:
+            print("continuing")
+            continue
         edge_mask = compute_salient_edges(m, 300)
         print "starting render"
 
         _, dis, _, cis, true_edge_masks = pcg.generate_worksurface_point_clouds(m, edge_mask, num_views)
         for i in range(num_views):
-            print('view:', i)
             di, ci, true_edge_mask = dis[i], cis[i], true_edge_masks[i]
             point_cloud_im = ci.deproject_to_image(di)
             normal_cloud_im  = point_cloud_im.normal_cloud_im()
@@ -102,3 +103,6 @@ if __name__ == "__main__":
             np.save(os.path.join(output_mask_folder, str(filename_counter)), true_edge_mask.data)
             print (mesh_filepath, filename_counter)
             filename_counter += 1
+
+if __name__ == "__main__":
+    main()
