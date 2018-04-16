@@ -94,11 +94,11 @@ if __name__ == "__main__":
         for i in range(num_views):
             print('view:', i)
             di, ci, true_edge_mask = dis[i], cis[i], true_edge_masks[i]
-            normals = point_normal_cloud(di, ci)
-            import pdb
-            pdb.set_trace()
+            point_cloud_im = ci.deproject_to_image(di)
+            normal_cloud_im  = point_cloud_im.normal_cloud_im()
+            joined = np.dstack((di.data, normal_cloud_im.data))
             
-            np.save(os.path.join(output_depth_folder, str(filename_counter)), di.data)
+            np.save(os.path.join(output_depth_folder, str(filename_counter)), joined)
             np.save(os.path.join(output_mask_folder, str(filename_counter)), true_edge_mask.data)
             print (mesh_filepath, filename_counter)
             filename_counter += 1
