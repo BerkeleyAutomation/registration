@@ -8,8 +8,14 @@ from visualization import Visualizer3D as vis3d
 from visualization import Visualizer2D as vis2d
 from registration import PointCloudGenerator, Super4PCSAligner
 from meshrender import ViewsphereDiscretizer
-
+from keras.models import load_model
 from visible_edges import compute_salient_edges
+import os
+from scipy.spatial import KDTree
+
+
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 def sample_from_edges(x, sigma=0.0):
     vec = np.random.multivariate_normal(np.zeros(3), np.eye(3))
@@ -73,7 +79,6 @@ def run_test_cases(mesh, pcs_cfg, pcg_cfg, n_test_cases=1, vis=False):
     # For each test case
     for i in range(n_test_cases):
         pc_cam, depth_im, T_obj_camera, ci, true_edge_mask = pcs[i], dis[i], poses[i], cis[i], true_edge_masks[i]
-
         # TODO
         # Sample points from the salient edges of the transformed mesh with some sigma
         # Discard "invisible" points (i.e. edges below the surface of the object)
@@ -91,7 +96,18 @@ def run_test_cases(mesh, pcs_cfg, pcg_cfg, n_test_cases=1, vis=False):
         #    vis2d.show()
 
         #mask = BinaryImage(image_edges)
-        mask = true_edge_mask
+        # mask = true_edge_mask
+        
+        # load the model and use it to get the edges
+        
+        model = load_model("edge_cnn_10_epochs.h5")
+        point_cloud_im = ci.deproject_to_image(depth_im)
+        normal_cloud_im  = point_cloud_im.normal_cloud_im()
+        joined = np.dstack((depth_im.data, normal_cloud_im.data))
+        mask = model.predict(joined[np.newaxis, :, :, :])[0]
+        mask *= 256
+        mask = BinaryImage(mask.astype(np.uint8))
+        
         depth_im_edges = depth_im.mask_binary(mask)
         if vis:
             vis2d.figure()
@@ -108,6 +124,20 @@ def run_test_cases(mesh, pcs_cfg, pcg_cfg, n_test_cases=1, vis=False):
 
         # Align the two point sets with Super4PCS
         T_obj_camera_est = aligner.align(edge_pc_cam, edge_pc_obj)
+        
+        
+        # sample points along original mesh, transform to camera, transform back with estimated transform, then compare
+        sampled_points = mesh.sample(10000)
+        
+        transformed_to_cam = T_obj_camera.apply(PointCloud(sampled_points.T, frame='obj'))
+        est_points = T_obj_camera_est.inverse().apply(transformed_to_cam).data.T
+        
+        lookup_tree = KDTree(sampled_points)
+        _, indices = lookup_tree.query(est_points)
+        squared_err = np.linalg.norm(est_points - sampled_points[indices], axis=1)**2
+        err = np.sum(squared_err)
+        print "Nearest Neighbor Error", err
+
 
         # Visualize the result
         true_mesh = mesh.copy()
@@ -115,7 +145,7 @@ def run_test_cases(mesh, pcs_cfg, pcg_cfg, n_test_cases=1, vis=False):
 
         est_mesh = mesh.copy()
         est_mesh.apply_transform(T_obj_camera_est.matrix)
-
+    
         vis3d.figure()
         vis3d.points(T_obj_camera_est.as_frames('mesh','camera') * edge_pc_obj, color=(0,0,1), scale=0.001)
         vis3d.points(edge_pc_cam, color=(0,1,0), scale=0.001)
@@ -188,16 +218,17 @@ def main():
             'min' : 0.0,
             'max' : 0.0,
         },
-        'im_width': 600,
-        'im_height': 600
+        'im_width': 256,
+        'im_height': 256
     }
 
     # Load a trimesh and sample points from it
     #m = trimesh.load_mesh('data/bar_clamp.obj')
-    m = trimesh.load_mesh('data/demon_helmet.obj')
+    #m = trimesh.load_mesh('data/demon_helmet.obj')
     #m = trimesh.load_mesh('data/73061.obj') # bad
     #m = trimesh.load_mesh('data/grip.obj')
     #m = trimesh.load_mesh('data/254883.obj')
+    m = trimesh.load_mesh('data/2126220.obj')
     #m = trimesh.load_mesh('data/418149.obj') # slow
     #m = trimesh.load_mesh('data/2580763.obj') # bad
     #m = trimesh.load_mesh('data/294517.obj') # tough
