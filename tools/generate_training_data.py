@@ -21,7 +21,7 @@ def main():
 
     image_generator = SalientEdgeImageGenerator(cfg['generator_config'])
 
-    filename_counter = 0
+    filename_counter = len(os.listdir(output_dir))
     for zip_filepath in os.listdir(input_dir):
         full_path = os.path.join(input_dir, zip_filepath)
         ses = SalientEdgeSet.load(full_path)

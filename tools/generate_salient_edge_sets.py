@@ -21,7 +21,7 @@ def main():
     mesh_dir = cfg['mesh_dir']
     output_dir = cfg['output_dir']
 
-    filename_counter = 0
+    filename_counter = len(os.listdir(output_dir))
     for mesh_filepath in os.listdir(mesh_dir):
         print(mesh_filepath)
         full_path = os.path.join(mesh_dir, mesh_filepath)

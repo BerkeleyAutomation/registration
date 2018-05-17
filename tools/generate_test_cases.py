@@ -21,7 +21,7 @@ def main():
 
     example_generator = RegistrationExampleGenerator(cfg['generator_config'])
 
-    filename_counter = 0
+    filename_counter = len(os.listdir(output_dir))
     for ses_filepath in os.listdir(input_dir):
         full_path = os.path.join(input_dir, ses_filepath)
         examples = example_generator.generate_examples(full_path, cfg['n_samples_per_mesh'])
