@@ -47,6 +47,7 @@ class Super4PCSAligner(object):
         self._points1_fn = os.path.join(self._cache_dir, 'points1.ply')
         self._points2_fn = os.path.join(self._cache_dir, 'points2.ply')
         self._tf_fn = os.path.join(self._cache_dir, 'tf.txt')
+        open(self._tf_fn, 'a').close()
 
     def align(self, points1, points2):
         """Compute an aligning transform between two point clouds.
