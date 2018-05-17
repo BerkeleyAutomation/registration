@@ -1,0 +1,13 @@
+data_dir: /home/mmatl/Documents/code/catkin_ws/src/registration/data/training_data/
+output_file: /home/mmatl/Documents/code/catkin_ws/src/registration/data/models/edge_detector.h5
+validation_pct: 0.2
+model_cfg:
+    n_filters: 32
+    kernel_size: 7
+    input_width: 256
+    input_height: 256
+    input_channels: 4
+training_cfg:
+    learning_rate: 0.01
+    num_epochs: 100
+    cuda_device: 2

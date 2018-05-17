@@ -1,3 +1,5 @@
 from .version import __version__
 from .super4pcs import Super4PCSAligner
-from .data_generator import PointCloudGenerator
+from .salient_edges import SalientEdgeSet
+from .salient_edge_image_generator import SalientEdgeImageGenerator
+from .registration_example_generator import RegistrationExample, RegistrationExampleGenerator

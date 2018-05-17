@@ -1,0 +1,9 @@
+examples_dir: /home/mmatl/Documents/code/catkin_ws/src/registration/data/test_cases/
+model_file: /home/mmatl/Documents/code/catkin_ws/src/registration/data/models/edge_cnn_10_epochs.h5
+cuda_device: 2
+super4pcs_config:
+    overlap: 0.6
+    accuracy: 0.001
+    samples: 600
+    timeout: 3000
+    cache_dir: ./.cache

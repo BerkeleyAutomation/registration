@@ -1,0 +1,9 @@
+mesh_dir: /home/mmatl/Documents/code/catkin_ws/src/registration/data/meshes/
+output_dir: /home/mmatl/Documents/code/catkin_ws/src/registration/data/edge_sets/
+max_n_faces: 500000
+
+salient_edge_set_cfg:
+    num_views: 100
+    saliency_threshold: 0.3
+
+

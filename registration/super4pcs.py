@@ -1,3 +1,7 @@
+"""
+Code for running a Super4PCS alignment between two point clouds.
+Author: Matthew Matl
+"""
 import os
 import subprocess
 
@@ -6,9 +10,6 @@ import trimesh
 from plyfile import PlyElement, PlyData
 
 from autolab_core import RigidTransform, PointCloud
-from visualization import Visualizer3D as vis
-
-from .data_generator import PointCloudGenerator
 
 class Super4PCSAligner(object):
 
@@ -18,7 +19,8 @@ class Super4PCSAligner(object):
         Parameters
         ----------
         config : autolab_core.YamlConfig
-            Config containing information for parameterizing Super4PCS
+            Config containing information for parameterizing Super4PCS.
+            Required parameters are listed in the Other Parameters section.
 
         Other Parameters
         ----------------
@@ -39,6 +41,7 @@ class Super4PCSAligner(object):
         self._samples = config['samples']
         self._timeout = config['timeout']
         self._cache_dir = config['cache_dir']
+
         if not os.path.exists(self._cache_dir):
             os.makedirs(self._cache_dir)
         self._points1_fn = os.path.join(self._cache_dir, 'points1.ply')
