@@ -1,6 +1,6 @@
 edge_set_dir: /nfs/diskstation/projects/registration/data/edge_sets
 output_dir: /nfs/diskstation/projects/registration/data/training_data
-n_samples_per_mesh: 10
+n_samples_per_mesh: 50
 
 generator_config:
     worksurface_rv_config:
