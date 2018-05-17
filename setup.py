@@ -8,8 +8,12 @@ requirements = [
     'numpy',
     'trimesh',
     'plyfile',
+    'keras',
+    'dill',
+    'scipy',
     'autolab_core',
     'visualization',
+    'meshrender',
     'autolab_perception'
 ]
 
