@@ -1,5 +1,5 @@
-edge_set_dir: /home/mmatl/Documents/code/catkin_ws/src/registration/data/edge_sets/
-output_dir: /home/mmatl/Documents/code/catkin_ws/src/registration/data/training_data/
+edge_set_dir: /nfs/diskstation/projects/registration/data/edge_sets
+output_dir: /nfs/diskstation/projects/registration/data/training_data
 n_samples_per_mesh: 10
 
 generator_config:

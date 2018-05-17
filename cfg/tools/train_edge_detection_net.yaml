@@ -1,5 +1,5 @@
-data_dir: /home/mmatl/Documents/code/catkin_ws/src/registration/data/training_data/
-output_file: /home/mmatl/Documents/code/catkin_ws/src/registration/data/models/edge_detector.h5
+data_dir: /nfs/diskstation/projects/registration/data/training_data
+output_file: /nfs/diskstation/projects/registration/data/conv_models/salient_edge_net.h5
 validation_pct: 0.2
 model_cfg:
     n_filters: 32
